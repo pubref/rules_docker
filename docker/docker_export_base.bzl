@@ -2,7 +2,8 @@ def _execute(ctx, cmd):
     result = ctx.execute(cmd)
     if result.return_code:
         fail("%s failed: %s" % (" ".join(cmd), result.stderr))
-    #print("Success: %s" % cmd)
+    if ctx.attr.verbose:
+        print("Success: %s" % cmd)
     return result
 
 def _impl(ctx):
@@ -60,12 +61,20 @@ def _impl(ctx):
     # Stop container
     _execute(ctx, [docker, "stop", container_id])
 
+    tar = ctx.attr.tar
+    if not ctx.which(tar):
+        fail("tar not found: %s" % tar)
+
     # Filter tarfile to rootfs.tar.  This is stupid, but I can't seem
     # to find a more elegant way to filter that works on both osx and
     # linux, gnutar and bsdtar.
     _execute(ctx, ["mkdir", "tmp"])
-    _execute(ctx, ["tar", "-xf", tarfile, "-C", "tmp"])
-    _execute(ctx, ["tar", "--exclude", "__sleep__", "-cf", "rootfs.tar", "-C", "tmp", "."])
+    _execute(ctx, [tar, "-xf", tarfile, "-C", "tmp"])
+
+    excludes = []
+    for e in ctx.attr.excludes + ["__sleep__"]:
+        excludes += ["--exclude", e]
+    _execute(ctx, [tar] + excludes + ["-cf", "rootfs.tar", "-C", "tmp", "."])
 
     # Get rootfs size
     tarsize = _execute(ctx, ["du", "-h", "rootfs.tar"]).stdout.strip().split("\t")[0]
@@ -83,7 +92,10 @@ def _impl(ctx):
     elif ctx.attr.dockerfile_content:
         ctx.file("Dockerfile", ctx.attr.dockerfile_content)
 
-    print("image %s exported as @%s//:base (%s, %s gzipped)" % (image_id, ctx.name, tarsize, gzsize))
+    if ctx.attr.verbose > 1:
+        print("rootfs.tar manifest:\n%s" % _execute(ctx, [tar, "tvf", "rootfs.tar.gz"]).stdout)
+    if ctx.attr.verbose:
+        print("image %s exported as @%s//:base (%s, %s gzipped)" % (image_id, ctx.name, tarsize, gzsize))
     # Write the BUILD file.
     ctx.file("BUILD",
 """
@@ -106,6 +118,8 @@ docker_export_base = repository_rule(
     "dockerfile_content": attr.string(),
     # Optional substitutions if desired
     "substitutions": attr.string_dict(),
+    # Optional tar --exclude args for final rootfs.tar
+    "excludes": attr.string_list(),
     # Expected sha256 (make mandatory?)
     "sha256": attr.string(),
     # Optional Build args
@@ -114,6 +128,8 @@ docker_export_base = repository_rule(
     "path": attr.string(default = "."),
     # sleep binary
     "sleep": attr.label(single_file = True, default = Label("//docker:sleep")),
+    # tar utility
+    "tar": attr.string(default = "tar"),
     # sha256 utility
     "_sha256": attr.label(
         default=Label("@bazel_tools//tools/build_defs/docker:sha256"),
@@ -121,5 +137,7 @@ docker_export_base = repository_rule(
         executable=True,
         allow_files=True,
     ),
+    # verbose level
+    "verbose": attr.int(),
   }
 )

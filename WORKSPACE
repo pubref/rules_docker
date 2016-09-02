@@ -12,6 +12,7 @@ docker_repositories(
 docker_export_base(
     name = "gliderlabs_alpine_3_4_exported",
     dockerfile_content = "FROM gliderlabs/alpine:3.4",
+    verbose = 2,
 )
 
 docker_export_base(
