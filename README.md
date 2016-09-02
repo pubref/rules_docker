@@ -1,8 +1,8 @@
 # `rules_docker` (αlpha) [![Build Status](https://travis-ci.org/pubref/rules_docker.svg?branch=master)](https://travis-ci.org/pubref/rules_docker)
 
-These are respository rules for building deterministic base docker
+These are repository rules for building deterministic base docker
 images with bazel.  Bazel provides fantastic support for this with the
-`docker_build` rule.  This function removes timestamps and other
+[docker_build](https://bazel.io/docs/be/docker.html) rule.  This function removes timestamps and other
 non-deterministic data in order to repeatably build docker images
 based on content alone.
 
@@ -92,3 +92,9 @@ docker_build  rule  //debian:wheezy
 docker_build  rule  //docker:scratch
 docker_build  rule  //ubuntu:trusty
 ```
+
+## Additional Links
+
+* Blog Post: https://bazel.io/blog/2015/07/28/docker_build.html
+* Source: https://github.com/bazelbuild/bazel/blob/master/tools/build_defs/docker/docker.bzl
+* Issue #1058 for docker_pull rule: https://github.com/bazelbuild/bazel/issues/1058
