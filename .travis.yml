@@ -1,0 +1,42 @@
+# https://docs.travis-ci.com/user/trusty-ci-environment/
+dist: trusty
+sudo: required
+language: java
+
+services:
+  - docker
+
+env:
+  - V=HEAD URL=http://ci.bazel.io/job/Bazel/JAVA_VERSION=1.8,PLATFORM_NAME=linux-x86_64/lastSuccessfulBuild/artifact/output/ci/bazel--installer.sh FLAGS='--worker_verbose --strategy=Javac=worker --strategy=JsChecker=worker'
+  - V=0.3.1 URL=https://github.com/bazelbuild/bazel/releases/download/0.3.1/bazel-0.3.1-installer-linux-x86_64.sh FLAGS=''
+  - V=0.3.0 URL=http://bazel-mirror.storage.googleapis.com/github.com/bazelbuild/bazel/releases/download/0.3.0/bazel-0.3.0-installer-linux-x86_64.sh FLAGS=''
+
+before_install:
+  - wget -O install.sh $URL
+  - chmod +x install.sh
+  - ./install.sh --user
+  - rm -f install.sh
+
+branches:
+  only:
+  - travis
+  - master
+
+script:
+  - |
+    bazel \
+      --output_base=$HOME/.cache/bazel \
+      --batch \
+      --host_jvm_args=-Xmx500m \
+      --host_jvm_args=-Xms500m \
+      run \
+      --verbose_failures \
+      --sandbox_debug \
+      --spawn_strategy=standalone \
+      --genrule_strategy=standalone \
+      --local_resources=400,1,1.0 \
+      examples/alpine:export foo/bar:baz \
+      $FLAGS
+
+notifications:
+  email: false
