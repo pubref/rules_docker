@@ -2,7 +2,7 @@ def _execute(ctx, cmd):
     result = ctx.execute(cmd)
     if result.return_code:
         fail("%s failed: %s" % (" ".join(cmd), result.stderr))
-    print("Success: %s" % cmd)
+    #print("Success: %s" % cmd)
     return result
 
 def _impl(ctx):
@@ -60,19 +60,33 @@ def _impl(ctx):
     # Stop container
     _execute(ctx, [docker, "stop", container_id])
 
-    # Remove our sleep file
-    #_execute(ctx, ["tar", "--delete", "__sleep__"])
+    # Filter tarfile to rootfs.tar
+    _execute(ctx, ["tar", "cf", "rootfs.tar", "--exclude", "__sleep__", "@" + tarfile])
+    # _execute(ctx, ["tar", "-x", "-f", tarfile,
+    #                "|",
+    #                "tar", "-c", "rootfs.tar", "--exclude", "__sleep__", "-"])
 
+    # Get rootfs size
+    tarsize = _execute(ctx, ["du", "-h", "rootfs.tar"]).stdout.strip().split("\t")[0]
+    _execute(ctx, ["gzip", "rootfs.tar"])
+    gzsize = _execute(ctx, ["du", "-h", "rootfs.tar.gz"]).stdout.strip().split("\t")[0]
+
+    # Cleanup
+    _execute(ctx, ["rm", tarfile, "__sleep__"])
+    _execute(ctx, ["docker", "rm", container_id])
+    #_execute(ctx, ["docker", "rmi", "--force", image_id]) # Delete this or leave it?
+
+    print("image %s exported as @%s//:base (%s, %s gzipped)" % (image_id, ctx.name, tarsize, gzsize))
     # Write the BUILD file.
     ctx.file("BUILD",
 """
 load("@bazel_tools//tools/build_defs/docker:docker.bzl", "docker_build")
 docker_build(
     name = "base",
-    tars = ["%s"],
+    tars = ["rootfs.tar.gz"],
     visibility = ["//visibility:public"],
 )
-""" % tarfile)
+""")
 
 docker_export_base = repository_rule(
   implementation = _impl,

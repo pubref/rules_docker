@@ -2,12 +2,12 @@ package main
 
 import(
 	"os"
-	"fmt"
 	"time"
 	"strconv"
 )
 
 func main() {
+	// Using panic for smaller code size. Not idiomatic.
 	if len(os.Args) != 2 {
 		panic("Usage: sleep SECONDS")
 	}
@@ -16,6 +16,5 @@ func main() {
 	if err != nil {
 		panic("Usage: sleep SECONDS")
 	}
-	fmt.Println("sleep", seconds)
 	time.Sleep(time.Duration(n) * time.Second)
 }

@@ -10,7 +10,7 @@ docker_repositories(
 )
 
 docker_export_base(
-    name = "alpine3",
+    name = "gliderlabs_alpine_3_4",
     dockerfile = "//docker:alpine.Dockerfile",
 )
 
@@ -20,7 +20,7 @@ docker_export_base(
 )
 
 docker_export_base(
-    name = "alpine_go",
+    name = "iron_go",
     dockerfile_content = "FROM iron/go:dev",
 )
 

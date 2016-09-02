@@ -15,3 +15,13 @@ docker_build(
     base = "@scratch//:base",
     repository = "test",
 )
+
+docker_build(
+    name = "java8",
+    base = "@iron_java8//:base",
+)
+
+docker_build(
+    name = "go",
+    base = "@iron_go//:base",
+)
