@@ -6,10 +6,9 @@ but finding and building base images for the `docker_build` command is
 a pain.
 
 > You must have `docker` installed and available on your PATH, bazel
-> won't download it for you at the moment.  Also seems to required
-> bazel 0.3.1 or HEAD (fails with 0.3.0).
+> won't download it for you at the moment.  Require bazel 0.3.1
+> or HEAD is required (fails with 0.3.0).
 
-```python
 ```python
 git_repository(
     name = "org_pubref_rules_docker",
