@@ -35,7 +35,6 @@ git_repository(
     remote = "https://github.com/pubref/rules_docker.git",
 )
 load("@org_pubref_rules_docker//docker:rules.bzl",
-     "docker_repositories",
      "docker_rootfs",
      # "docker_rootfs_http_file",
      # "docker_rootfs_github_repository",
