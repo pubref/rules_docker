@@ -11,9 +11,9 @@ one is expected to build images based on vendoring of layers via `deb`
 archives.  This makes it hard to use distros that use different
 packaging systems such as Alpine Linux.
 
-The idea with these rules is that you build a construct a root
-filesystem based on a Dockerfile instructions and then layer on your
-build artifacts.
+The idea with these rules is that you construct a root filesystem
+based on a Dockerfile instructions and then layer on your build
+artifacts.
 
 | Rule | Description |
 | ---: | ---- |
@@ -23,7 +23,7 @@ build artifacts.
 | `docker_build` | Package macro that calls the `@bazel_tools//tools/docker/docker_build.bzl` rule with an alternative `incremental_load.sh.tpl` template file. See [#1651](https://github.com/bazelbuild/bazel/issues/1651) |
 
 > You must have `docker` running, bazel won't download/install it for
-> you at the moment.  Require bazel 0.3.1 or HEAD is required (fails
+> you at the moment.  Requires bazel 0.3.1 or HEAD is required (fails
 > with 0.3.0).
 
 ## Step 1: Add rules_docker to your workspace
@@ -41,10 +41,10 @@ load("@org_pubref_rules_docker//docker:rules.bzl",
 )
 ```
 
-## Step 2: Add docker_rootfs rules to your workspace as needed
+## Step 2: Add `docker_rootfs` rules to your workspace as needed
 
 Example repository rule to generate a rootfs.tar from the busybox
-image.  The image becomes available at @busybox//:base.
+image.  The image becomes available at `@busybox//:base`.
 
 ```python
 docker_rootfs(
