@@ -5,10 +5,9 @@ docker images with bazel.  Bazel provides some nice support for this,
 but finding and building base images for the `docker_build` command is
 a pain.
 
-# WORKSPACE
-
-> Note: You must have `docker` installed and available on your PATH,
-> bazel won't download it for you at the moment.
+> You must have `docker` installed and available on your PATH, bazel
+> won't download it for you at the moment.  Also seems to required
+> bazel 0.3.1 or HEAD (fails with 0.3.0).
 
 ```python
 ```python
@@ -65,8 +64,3 @@ command.
 Macro that calls the `@bazel_tools//tools/docker/docker_build.bzl`
 rule with an alternative `incremental_load.sh.tpl` template file (due
 to bugfix in osx).
-
-# docker_repositories
-
-Repository rule to load dependencies for these rules.  Put this in
-your WORKSPACE.
