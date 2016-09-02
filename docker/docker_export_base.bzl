@@ -60,11 +60,12 @@ def _impl(ctx):
     # Stop container
     _execute(ctx, [docker, "stop", container_id])
 
-    # Filter tarfile to rootfs.tar
-    _execute(ctx, ["tar", "cf", "rootfs.tar", "--exclude", "__sleep__", "@" + tarfile])
-    # _execute(ctx, ["tar", "-x", "-f", tarfile,
-    #                "|",
-    #                "tar", "-c", "rootfs.tar", "--exclude", "__sleep__", "-"])
+    # Filter tarfile to rootfs.tar.  This is stupid, but I can't seem
+    # to find a more elegant way to filter that works on both osx and
+    # linux, gnutar and bsdtar.
+    _execute(ctx, ["mkdir", "tmp"])
+    _execute(ctx, ["tar", "-xf", tarfile, "-C", "tmp"])
+    _execute(ctx, ["tar", "--exclude", "__sleep__", "-cf", "rootfs.tar", "-C", "tmp", "."])
 
     # Get rootfs size
     tarsize = _execute(ctx, ["du", "-h", "rootfs.tar"]).stdout.strip().split("\t")[0]
@@ -72,9 +73,15 @@ def _impl(ctx):
     gzsize = _execute(ctx, ["du", "-h", "rootfs.tar.gz"]).stdout.strip().split("\t")[0]
 
     # Cleanup
-    _execute(ctx, ["rm", tarfile, "__sleep__"])
+    _execute(ctx, ["rm", "-rf", tarfile, "__sleep__", "tmp"])
     _execute(ctx, ["docker", "rm", container_id])
     #_execute(ctx, ["docker", "rmi", "--force", image_id]) # Delete this or leave it?
+
+    # Restore original for posterity
+    if (ctx.attr.dockerfile):
+        ctx.template("Dockerfile", ctx.attr.dockerfile, ctx.attr.substitutions)
+    elif ctx.attr.dockerfile_content:
+        ctx.file("Dockerfile", ctx.attr.dockerfile_content)
 
     print("image %s exported as @%s//:base (%s, %s gzipped)" % (image_id, ctx.name, tarsize, gzsize))
     # Write the BUILD file.
