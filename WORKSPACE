@@ -34,7 +34,7 @@ docker_rootfs(
 docker_rootfs_http_file(
     name = "alpine_edge",
     url = "https://github.com/gliderlabs/docker-alpine/raw/rootfs/gliderlabs-edge/versions/gliderlabs-edge/rootfs.tar.gz",
-    sha256 = "b1cb59006443cc7b0c6b91d195412b8fe9c479393a6bacab0751dfc6f41b09c3",
+    # elide sha256 here since it changes frequently
     verbose = 1,
 )
 
